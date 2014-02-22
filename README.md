@@ -67,7 +67,7 @@ once it's merged in you'll get added. If not, feel free to bug
 How To Contribute
 -----------------
 
-* Clone: `git@github.com:jessepollak/mixpanel-python-async.git`
+* Clone: `git@github.com:jessepollak/urlmatch.git`
 * Create a topic branch: `git checkout -b awesome_feature`
 * Commit away (and add unit tests for any code your write).
 * Keep up to date: `git fetch && git rebase origin/master`.
@@ -86,7 +86,7 @@ Once it's accepted:
 can change origin to point to the Read+Write URL:
 
 ```
-git remote set-url origin git@github.com:jessepollak/mixpanel-python-async.git
+git remote set-url origin git@github.com:jessepollak/urlmatch.git
 ```
 
 Otherwise, you can continue to hack away in your own fork.
