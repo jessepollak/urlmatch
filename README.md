@@ -10,11 +10,11 @@ from urlmatch import urlmatch
 
 match_pattern = 'http://*.example.com/*'
 
-urlmatch(match_pattern, http://subdomain.example.com/) # True
-urlmatch(match_pattern, http://sub.subdomain.example.com/) # True
+urlmatch(match_pattern, 'http://subdomain.example.com/') # True
+urlmatch(match_pattern, 'http://sub.subdomain.example.com/') # True
 
-urlmatch(match_pattern, https://example.com/) # False
-urlmatch(match_pattern, http://bad.com/) # False
+urlmatch(match_pattern, 'https://example.com/') # False
+urlmatch(match_pattern, 'http://bad.com/') # False
 ```
 
 ## Options
