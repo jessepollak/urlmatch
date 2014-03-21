@@ -23,6 +23,7 @@ There are a few options that affect how the match patterns work.
 
 * `path_re1uired` (default is True) - a `bool` which dictates whether the match pattern must have path
 * `fuzzy_scheme` (default is False) - a `bool` which dictates whether the scheme should be matched "fuzzily." if this is true, then any valid scheme (`*`, `http`, `https`) will match both `http` and `https`
+* 'http_auth_allowed' (default is True) - `bool` which dictates whether URLs with HTTP Authentication in the URL should be allowed or not
 
 ## Match pattern syntax
 

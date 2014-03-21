@@ -7,7 +7,7 @@ class BadMatchPattern(Exception):
     """The Exception that's raised when a match pattern fails"""
     pass
 
-def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False):
+def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False, http_auth_allowed=True):
     """
     Returns the regular expression for a given match pattern.
 
@@ -18,6 +18,8 @@ def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False):
             must have path
         fuzzy_scheme: if this is true, then if the scheme is `*`, `http`,
             or `https`, it will match both `http` and `https`
+        http_auth_allowed: if this is true, then URLs with http auth on the correct
+            domain and path will be matched
 
     Returns:
 
@@ -36,6 +38,11 @@ def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False):
         pattern_regex += result.group(1)
 
     pattern_regex += "://"
+
+    if http_auth_allowed:
+        # add optional HTTP auth
+        safe_characters = "[^\/:.]"
+        pattern_regex += "(?:{safe}+(?:\:{safe}+)?@)?".format(safe=safe_characters)
 
     pattern = pattern[len(result.group(0)):]
 

@@ -266,6 +266,20 @@ class URLMatchTest(unittest.TestCase):
         self.assertFalse(urlmatch(pattern, 'http://bad.com/longer/path'))
 
 
+    def test_http_auth(self):
+        pattern = ('http://test.com/')
+
+        self.assertTrue(urlmatch(pattern, 'http://user@test.com/'))
+        self.assertTrue(urlmatch(pattern, 'http://user:test@test.com/'))
+
+        self.assertIsNone(urlmatch(pattern, 'http://user:@test.com/'))
+        self.assertIsNone(urlmatch(pattern, 'http://:@test.com/'))
+        self.assertIsNone(urlmatch(pattern, 'http://@test.com/'))
+        self.assertIsNone(urlmatch(pattern, 'http://user.test:@test.com/'))
+        self.assertIsNone(urlmatch(pattern, 'http://user.test:password@test.com/'))
+
+
+
 
 
 
