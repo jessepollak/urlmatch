@@ -3,26 +3,27 @@ urlmatch lets you easily check whether urls are on a domain or subdomain
 """
 import re
 
+
 class BadMatchPattern(Exception):
     """The Exception that's raised when a match pattern fails"""
     pass
 
-def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False, http_auth_allowed=True):
+
+def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False,
+                        http_auth_allowed=True):
     """
     Returns the regular expression for a given match pattern.
 
     Args:
-
         pattern: a `urlmatch` formatted match pattern
         path_required: a `bool` which dicates whether the match pattern
             must have path
         fuzzy_scheme: if this is true, then if the scheme is `*`, `http`,
             or `https`, it will match both `http` and `https`
-        http_auth_allowed: if this is true, then URLs with http auth on the correct
-            domain and path will be matched
+        http_auth_allowed: if this is true, then URLs with http auth on the
+            correct domain and path will be matched
 
     Returns:
-
         a regular expresion for the match pattern
     """
     if not isinstance(pattern, basestring):
@@ -42,7 +43,8 @@ def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False, http_au
     if http_auth_allowed:
         # add optional HTTP auth
         safe_characters = "[^\/:.]"
-        pattern_regex += "(?:{safe}+(?:\:{safe}+)?@)?".format(safe=safe_characters)
+        pattern_regex += "(?:{safe}+(?:\:{safe}+)?@)?".format(
+            safe=safe_characters)
 
     pattern = pattern[len(result.group(0)):]
 
@@ -81,8 +83,7 @@ def urlmatch(match_pattern, url, **kwargs):
     if isinstance(match_pattern, basestring):
         match_pattern = map(str.strip, match_pattern.split(','))
 
-    regex = "({})".format("|".join(map(lambda x: parse_match_pattern(x, **kwargs), match_pattern)))
+    regex = "({})".format("|".join(map(
+        lambda x: parse_match_pattern(x, **kwargs), match_pattern)))
 
     return regex and re.search(regex, url)
-
-
