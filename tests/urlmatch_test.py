@@ -12,14 +12,16 @@ class URLMatchTest(unittest.TestCase):
     """Tests that verify that the `urlmatch module functions correctly"""
 
     def setUp(self):
-        self._root_url = 'http://test.com'
+        self._http_url = 'http://test.com/'
+        self._https_url = 'https://test.com/'
+        self._subdomain_url = 'http://subdomain.test.com/'
 
     def _check_raises(self, pattern):
         """
         Check that a given pattern raises a BadMatchPattern exception.
         """
         with self.assertRaises(BadMatchPattern):
-            urlmatch(pattern, self._root_url)
+            urlmatch(pattern, self._http_url)
 
     def test_invalid_scheme(self):
         """
@@ -42,28 +44,30 @@ class URLMatchTest(unittest.TestCase):
         """
         self._check_raises('http://test.com')
 
+    def _check_true_match(self, pattern, root_url, **kwargs):
+        """Check the result of a call to urlmatch is True."""
+        for url in self._build_urls(root_url):
+            self.assertTrue(urlmatch(pattern, url, **kwargs))
+
+    def _check_false_match(self, pattern, root_url, **kwargs):
+        """Check the result of a call to urlmatch is False."""
+        for url in self._build_urls(root_url):
+            self.assertFalse(urlmatch(pattern, url, **kwargs))
+
+    def _build_urls(self, root_url):
+        paths = ['', 'path', 'longer/path']
+        return [root_url + path for path in paths]
+
     def test_match_all(self):
         """
         Tests that there is an all match.
         """
         pattern = "*://*/*"
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'https://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://other.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://other.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://other.com/longer/path'))
-
+        self._check_true_match(pattern, self._http_url)
+        self._check_true_match(pattern, self._https_url)
+        self._check_true_match(pattern, self._subdomain_url)
+        self._check_true_match(pattern, 'http://other.com/')
 
     def test_match_exact(self):
         """
@@ -83,38 +87,20 @@ class URLMatchTest(unittest.TestCase):
         """
         pattern = 'http://test.com/*'
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path'))
-
-        self.assertFalse(urlmatch(pattern, 'http://subdomain.test.com/'))
-        self.assertFalse(urlmatch(pattern, 'http://subdomain.test.com/path'))
-        self.assertFalse(urlmatch(pattern, 'http://subdomain.test.com/longer/path'))
-
-        self.assertFalse(urlmatch(pattern, 'https://test.com/'))
-        self.assertFalse(urlmatch(pattern, 'https://test.com/path'))
-        self.assertFalse(urlmatch(pattern, 'https://test.com/longer/path'))
-
+        self._check_true_match(pattern, self._http_url)
+        self._check_false_match(pattern, self._https_url)
+        self._check_false_match(pattern, self._subdomain_url)
 
     def test_match_https(self):
         """
-        Tests that if it's just the https domain, we don't match any subdomains,
-        but match all paths.
+        Tests that if it's just the https domain, we don't match any
+        subdomains, but match all paths.
         """
         pattern = 'https://test.com/*'
 
-        self.assertTrue(urlmatch(pattern, 'https://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/longer/path'))
-
-        self.assertFalse(urlmatch(pattern, 'https://subdomain.test.com/'))
-        self.assertFalse(urlmatch(pattern, 'https://subdomain.test.com/path'))
-        self.assertFalse(urlmatch(pattern, 'https://subdomain.test.com/longer/path'))
-
-        self.assertFalse(urlmatch(pattern, 'http://test.com/'))
-        self.assertFalse(urlmatch(pattern, 'http://test.com/path'))
-        self.assertFalse(urlmatch(pattern, 'http://test.com/longer/path'))
-
+        self._check_false_match(pattern, self._http_url)
+        self._check_true_match(pattern, self._https_url)
+        self._check_false_match(pattern, self._subdomain_url)
 
     def tests_wildcard_scheme(self):
         """
@@ -123,14 +109,8 @@ class URLMatchTest(unittest.TestCase):
         """
         pattern = '*://test.com/*'
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'https://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/longer/path'))
-
+        self._check_true_match(pattern, self._http_url)
+        self._check_true_match(pattern, self._https_url)
 
     def test_subdomains_match(self):
         """
@@ -139,93 +119,51 @@ class URLMatchTest(unittest.TestCase):
         """
         pattern = 'http://*.test.com/*'
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://such.subdomain.test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://such.subdomain.test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://such.subdomain.test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://wow.such.subdomain.test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://wow.such.subdomain.test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://wow.such.subdomain.test.com/longer/path'))
-
+        self._check_true_match(pattern, self._http_url)
+        self._check_true_match(pattern, self._subdomain_url)
+        self._check_true_match(pattern, 'http://such.subdomain.test.com/')
+        self._check_true_match(pattern, 'http://wow.such.subdomain.test.com/')
 
     def test_sub_subdomain_match(self):
         """
-        Tests that if we have nested subdomains, it doesn't match the bare domain,
-        only the correct subdomains.
+        Tests that if we have nested subdomains, it doesn't match the bare
+        domain, only the correct subdomains.
         """
         pattern = 'http://*.subdomain.test.com/*'
 
-        self.assertFalse(urlmatch(pattern, 'http://test.com/'))
-        self.assertFalse(urlmatch(pattern, 'http://test.com/path'))
-        self.assertFalse(urlmatch(pattern, 'http://test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://subdomain.test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://such.subdomain.test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://such.subdomain.test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://such.subdomain.test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://wow.such.subdomain.test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://wow.such.subdomain.test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://wow.such.subdomain.test.com/longer/path'))
-
+        self._check_false_match(pattern, self._http_url)
+        self._check_true_match(pattern, self._subdomain_url)
+        self._check_true_match(pattern, 'http://such.subdomain.test.com/')
+        self._check_true_match(pattern, 'http://wow.such.subdomain.test.com/')
 
     def test_path_required_false(self):
         """
-        Tests that if `path_required` is set to False, then we don't need a path.
+        Tests that if `path_required` is set to False, then we don't need a
+        path.
         """
         pattern = 'http://test.com'
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/', path_required=False))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path', path_required=False))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path', path_required=False))
-
+        self._check_true_match(pattern, self._http_url, path_required=False)
 
     def test_fuzzy_scheme(self):
         """
-        Tests that if `fuzzy_scheme` is set to True, then as long as the scheme is
-        `*`, `http`, or `https`, it will match both `http` and `https`.
+        Tests that if `fuzzy_scheme` is set to True, then as long as the scheme
+        is `*`, `http`, or `https`, it will match both `http` and `https`.
         """
         pattern = 'http://test.com/*'
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path', fuzzy_scheme=True))
-
-        self.assertTrue(urlmatch(pattern, 'https://test.com/', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/path', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/longer/path', fuzzy_scheme=True))
+        self._check_true_match(pattern, self._http_url, fuzzy_scheme=True)
+        self._check_true_match(pattern, self._https_url, fuzzy_scheme=True)
 
         pattern = 'https://test.com/*'
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path', fuzzy_scheme=True))
-
-        self.assertTrue(urlmatch(pattern, 'https://test.com/', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/path', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/longer/path', fuzzy_scheme=True))
+        self._check_true_match(pattern, self._http_url, fuzzy_scheme=True)
+        self._check_true_match(pattern, self._https_url, fuzzy_scheme=True)
 
         pattern = '*://test.com/*'
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path', fuzzy_scheme=True))
-
-        self.assertTrue(urlmatch(pattern, 'https://test.com/', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/path', fuzzy_scheme=True))
-        self.assertTrue(urlmatch(pattern, 'https://test.com/longer/path', fuzzy_scheme=True))
-
+        self._check_true_match(pattern, self._http_url, fuzzy_scheme=True)
+        self._check_true_match(pattern, self._https_url, fuzzy_scheme=True)
 
     def test_multiple(self):
         """
@@ -234,32 +172,15 @@ class URLMatchTest(unittest.TestCase):
         """
         pattern = ('http://test.com/*', 'http://example.com/*')
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://example.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://example.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://example.com/longer/path'))
-
-        self.assertFalse(urlmatch(pattern, 'http://bad.com/'))
-        self.assertFalse(urlmatch(pattern, 'http://bad.com/path'))
-        self.assertFalse(urlmatch(pattern, 'http://bad.com/longer/path'))
+        self._check_true_match(pattern, self._http_url)
+        self._check_true_match(pattern, 'http://example.com/')
+        self._check_false_match(pattern, 'http://bad.com/')
 
         pattern = "http://test.com/*, http://example.com/*"
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://test.com/longer/path'))
-
-        self.assertTrue(urlmatch(pattern, 'http://example.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://example.com/path'))
-        self.assertTrue(urlmatch(pattern, 'http://example.com/longer/path'))
-
-        self.assertFalse(urlmatch(pattern, 'http://bad.com/'))
-        self.assertFalse(urlmatch(pattern, 'http://bad.com/path'))
-        self.assertFalse(urlmatch(pattern, 'http://bad.com/longer/path'))
-
+        self._check_true_match(pattern, self._http_url)
+        self._check_true_match(pattern, 'http://example.com/')
+        self._check_false_match(pattern, 'http://bad.com/')
 
     def test_http_auth(self):
         pattern = ('http://test.com/')
@@ -271,4 +192,5 @@ class URLMatchTest(unittest.TestCase):
         self.assertIsNone(urlmatch(pattern, 'http://:@test.com/'))
         self.assertIsNone(urlmatch(pattern, 'http://@test.com/'))
         self.assertIsNone(urlmatch(pattern, 'http://user.test:@test.com/'))
-        self.assertIsNone(urlmatch(pattern, 'http://user.test:password@test.com/'))
+        result = urlmatch(pattern, 'http://user.test:password@test.com/')
+        self.assertIsNone(result)
