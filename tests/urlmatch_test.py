@@ -7,45 +7,40 @@ sys.path.append('../')
 
 from urlmatch import urlmatch, BadMatchPattern
 
+
 class URLMatchTest(unittest.TestCase):
     """Tests that verify that the `urlmatch module functions correctly"""
 
     def setUp(self):
-        pass
+        self._root_url = 'http://test.com'
+
+    def _check_raises(self, pattern):
+        """
+        Check that a given pattern raises a BadMatchPattern exception.
+        """
+        with self.assertRaises(BadMatchPattern):
+            urlmatch(pattern, self._root_url)
 
     def test_invalid_scheme(self):
         """
         Tests that an invalid scheme raises a `BadMatchPattern` exception.
         """
-
-        with self.assertRaises(BadMatchPattern):
-            urlmatch('bad://test.com/*', 'http://test.com')
-
-        with self.assertRaises(BadMatchPattern):
-            urlmatch('http:/test.com/*', 'http://test.com')
+        self._check_raises('bad://test.com/*')
+        self._check_raises('http:/test.com/*')
 
     def test_invalid_domain(self):
         """
         Tests that an invalid domain raises a `BadMatchPattern` exception.
         """
-
-        with self.assertRaises(BadMatchPattern):
-            urlmatch('http:///*', 'http://test.com')
-
-        with self.assertRaises(BadMatchPattern):
-            urlmatch('http://*test/*', 'http://test.com')
-
-        with self.assertRaises(BadMatchPattern):
-            urlmatch('http://sub.*.test/*', 'http://test.com')
+        self._check_raises('http:///*')
+        self._check_raises('http://*test/*')
+        self._check_raises('http://sub.*.test/*')
 
     def test_invalid_path(self):
         """
         Tests that an invalid path raises a `BadMatchPattern` exception.
         """
-        pattern = 'http://test.com'
-
-        with self.assertRaises(BadMatchPattern):
-            urlmatch(pattern, 'http://test.com')
+        self._check_raises('http://test.com')
 
     def test_match_all(self):
         """
@@ -277,10 +272,3 @@ class URLMatchTest(unittest.TestCase):
         self.assertIsNone(urlmatch(pattern, 'http://@test.com/'))
         self.assertIsNone(urlmatch(pattern, 'http://user.test:@test.com/'))
         self.assertIsNone(urlmatch(pattern, 'http://user.test:password@test.com/'))
-
-
-
-
-
-
-
