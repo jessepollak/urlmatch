@@ -1,1 +1,1 @@
-from urlmatch import *
+from urlmatch import urlmatch
