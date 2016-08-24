@@ -46,17 +46,25 @@ class URLMatchTest(unittest.TestCase):
 
     def _check_true_match(self, pattern, root_url, **kwargs):
         """Check the result of a call to urlmatch is True."""
-        for url in self._build_urls(root_url):
-            self.assertTrue(urlmatch(pattern, url, **kwargs))
+        urls = self._build_urls(root_url)
+        self._check_urls(pattern, urls, True, **kwargs)
 
     def _check_false_match(self, pattern, root_url, **kwargs):
         """Check the result of a call to urlmatch is False."""
-        for url in self._build_urls(root_url):
-            self.assertFalse(urlmatch(pattern, url, **kwargs))
+        urls = self._build_urls(root_url)
+        self._check_urls(pattern, urls, False, **kwargs)
 
-    def _build_urls(self, root_url):
+    @staticmethod
+    def _build_urls(root_url):
+        """Given a root URL return a list of test URLs."""
         paths = ['', 'path', 'longer/path']
         return [root_url + path for path in paths]
+
+    def _check_urls(self, pattern, urls, expected_result, **kwargs):
+        """Check a list of URLs return the expected result."""
+        for url in urls:
+            result = urlmatch(pattern, url, **kwargs)
+            self.assertEqual(result, expected_result)
 
     def test_match_all(self):
         """
@@ -75,10 +83,11 @@ class URLMatchTest(unittest.TestCase):
         """
         pattern = "http://test.com/exact/path"
 
-        self.assertTrue(urlmatch(pattern, 'http://test.com/exact/path'))
+        self.assertEqual(urlmatch(pattern, 'http://test.com/exact/path'), True)
 
-        self.assertFalse(urlmatch(pattern, 'http://test.com/inexact/path'))
-        self.assertFalse(urlmatch(pattern, 'http://badtest.com/exact/path'))
+        bad_urls = ['http://test.com/inexact/path',
+                    'http://badtest.com/exact/path']
+        self._check_urls(pattern, bad_urls, False)
 
     def test_match_http(self):
         """
@@ -170,11 +179,11 @@ class URLMatchTest(unittest.TestCase):
         Tests that multiple patterns can be passed in as a `list` or a comma
         seperated `str` and they will be handled.
         """
-        pattern = ('http://test.com/*', 'http://example.com/*')
+        tuple_pattern = ('http://test.com/*', 'http://example.com/*')
 
-        self._check_true_match(pattern, self._http_url)
-        self._check_true_match(pattern, 'http://example.com/')
-        self._check_false_match(pattern, 'http://bad.com/')
+        self._check_true_match(tuple_pattern, self._http_url)
+        self._check_true_match(tuple_pattern, 'http://example.com/')
+        self._check_false_match(tuple_pattern, 'http://bad.com/')
 
         pattern = "http://test.com/*, http://example.com/*"
 
@@ -183,14 +192,15 @@ class URLMatchTest(unittest.TestCase):
         self._check_false_match(pattern, 'http://bad.com/')
 
     def test_http_auth(self):
+        """
+        Tests for URLs containing HTTP Authentication.
+        """
         pattern = ('http://test.com/')
 
-        self.assertTrue(urlmatch(pattern, 'http://user@test.com/'))
-        self.assertTrue(urlmatch(pattern, 'http://user:test@test.com/'))
+        good_urls = ['http://user@test.com/', 'http://user:test@test.com/']
+        self._check_urls(pattern, good_urls, expected_result=True)
 
-        self.assertIsNone(urlmatch(pattern, 'http://user:@test.com/'))
-        self.assertIsNone(urlmatch(pattern, 'http://:@test.com/'))
-        self.assertIsNone(urlmatch(pattern, 'http://@test.com/'))
-        self.assertIsNone(urlmatch(pattern, 'http://user.test:@test.com/'))
-        result = urlmatch(pattern, 'http://user.test:password@test.com/')
-        self.assertIsNone(result)
+        bad_urls = ['http://user:@test.com/', 'http://:@test.com/',
+                    'http://@test.com/', 'http://user.test:@test.com/',
+                    'http://user.test:password@test.com/']
+        self._check_urls(pattern, bad_urls, expected_result=False)

@@ -86,4 +86,4 @@ def urlmatch(match_pattern, url, **kwargs):
     regex = "({})".format("|".join(map(
         lambda x: parse_match_pattern(x, **kwargs), match_pattern)))
 
-    return regex and re.search(regex, url)
+    return bool(regex and re.search(regex, url))
