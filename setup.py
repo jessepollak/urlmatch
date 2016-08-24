@@ -15,7 +15,9 @@ setup(
     version='0.0.2',
     author='Jesse Pollak',
     author_email='jpollak92@gmail.com',
-    packages=[],
+    packages=[
+        'urlmatch'
+    ],
     url='https://github.com/jessepollak/urlmatch',
     description=short_description,
     long_description=long_description,
