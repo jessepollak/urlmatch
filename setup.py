@@ -1,9 +1,6 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
 import os
+from setuptools import setup, find_packages
+
 short_description = 'Python library for matching URLs.'
 if os.path.exists('README.txt'):
     long_description = open('README.txt').read()
@@ -15,9 +12,7 @@ setup(
     version='0.0.3',
     author='Jesse Pollak',
     author_email='jpollak92@gmail.com',
-    packages=[
-        'urlmatch'
-    ],
+    packages=find_packages(),
     url='https://github.com/jessepollak/urlmatch',
     description=short_description,
     long_description=long_description,
