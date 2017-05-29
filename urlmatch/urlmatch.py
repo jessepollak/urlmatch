@@ -42,8 +42,8 @@ def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False,
 
     if http_auth_allowed:
         # add optional HTTP auth
-        safe_characters = "[^\/:.]"
-        pattern_regex += "(?:{safe}+(?:\:{safe}+)?@)?".format(
+        safe_characters = r"[^\/:.]"
+        pattern_regex += r"(?:{safe}+(?:\:{safe}+)?@)?".format(
             safe=safe_characters)
 
     pattern = pattern[len(result.group(0)):]
