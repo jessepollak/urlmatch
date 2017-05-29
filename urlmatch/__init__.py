@@ -1,1 +1,1 @@
-from urlmatch import urlmatch
+from .urlmatch import urlmatch, BadMatchPattern
