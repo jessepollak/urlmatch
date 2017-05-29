@@ -26,9 +26,6 @@ def parse_match_pattern(pattern, path_required=True, fuzzy_scheme=False,
     Returns:
         a regular expresion for the match pattern
     """
-    if not isinstance(pattern, basestring):
-        return
-
     pattern_regex = "(?:^"
     result = re.search(r'^(\*|https?):\/\/', pattern)
     if not result:
@@ -80,7 +77,7 @@ def urlmatch(match_pattern, url, **kwargs):
         match_pattern: a `urlmatch` formatted match pattern_regex
         url: a url
     """
-    if isinstance(match_pattern, basestring):
+    if isinstance(match_pattern, str):
         match_pattern = map(str.strip, match_pattern.split(','))
 
     regex = "({})".format("|".join(map(
