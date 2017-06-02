@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jessepollak/urlmatch.svg?branch=master)](https://travis-ci.org/jessepollak/urlmatch)
+
 urlmatch - fnmatch for the web
 ========
 
