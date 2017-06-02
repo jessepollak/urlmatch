@@ -1,9 +1,6 @@
 """Tests that verify that the `urlmatch` module functions correctly"""
 
 import unittest
-import sys
-
-sys.path.append('../')
 
 from urlmatch import urlmatch, BadMatchPattern
 
