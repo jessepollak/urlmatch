@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from distutils.core import setup
 
 short_description = 'Python library for matching URLs.'
 if os.path.exists('README.txt'):
