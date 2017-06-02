@@ -10,7 +10,7 @@ else:
 
 setup(
     name='urlmatch',
-    version='0.0.4',
+    version='1.0.1',
     author='Jesse Pollak',
     author_email='jpollak92@gmail.com',
     packages=find_packages(),
